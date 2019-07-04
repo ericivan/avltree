@@ -81,6 +81,8 @@ func (m *AvlMap) Put(key int, value string) *AvlEntry {
 		}
 	}
 
+	m.fixAfterIntersion(key)
+
 	return retNode
 }
 
@@ -200,26 +202,37 @@ func (m *AvlMap) fixAfterIntersion(key int) {
 	for !itemStack.IsEmpty() {
 		p := itemStack.Pop()
 
-		ptr := p.(*AvlEntry)
+		node := p.(*AvlEntry)
 
-		newHeight := math.Max(getHeight(ptr.Left), getHeight(ptr.Right)) + 1
+		newHeight := math.Max(getHeight(node.Left), getHeight(node.Right)) + 1
 
-		if (ptr.Height > 1 && int(newHeight) == ptr.Height) {
-
+		if node.Height > 1 && int(newHeight) == node.Height {
+			itemStack.Clear()
+			return
 		}
 
-		ptr.Height = int(newHeight)
+		node.Height = int(newHeight)
 
-		d := getHeight(ptr.Left) - getHeight(ptr.Right)
+		d := getHeight(node.Left) - getHeight(node.Right)
 
 		if math.Abs(d) <= 1 {
-
+			continue
 		} else {
 
 			if d == 2 {
-
+				if key < node.Left.Key {
+					node = RightRotate(node, m)
+				} else {
+					node = LeftRotate(node.Left, m)
+					node = RightRotate(node, m)
+				}
 			} else if d == -2 {
-
+				if key > node.Right.Key {
+					node = LeftRotate(node, m)
+				} else {
+					node = RightRotate(node.Right, m)
+					node = LeftRotate(node, m)
+				}
 			}
 
 			if !itemStack.IsEmpty() {
@@ -228,9 +241,9 @@ func (m *AvlMap) fixAfterIntersion(key int) {
 				peekData := peekPtr.(*AvlEntry)
 
 				if compare(key, peekData.Key) < 0 {
-
+					peekData.Left = node
 				} else {
-
+					peekData.Right = node
 				}
 			}
 

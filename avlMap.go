@@ -199,39 +199,41 @@ func (m *AvlMap) fixAfterIntersion(key int) {
 
 	itemStack := m.LinkList
 
+	var retNode *AvlEntry
+
 	for !itemStack.IsEmpty() {
 		p := itemStack.Pop()
 
-		node := p.(*AvlEntry)
+		retNode = p.(*AvlEntry)
 
-		newHeight := math.Max(getHeight(node.Left), getHeight(node.Right)) + 1
+		newHeight := math.Max(getHeight(retNode.Left), getHeight(retNode.Right)) + 1
 
-		if node.Height > 1 && int(newHeight) == node.Height {
+		if retNode.Height > 1 && int(newHeight) == retNode.Height {
 			itemStack.Clear()
 			return
 		}
 
-		node.Height = int(newHeight)
+		retNode.Height = int(newHeight)
 
-		d := getHeight(node.Left) - getHeight(node.Right)
+		d := getHeight(retNode.Left) - getHeight(retNode.Right)
 
 		if math.Abs(d) <= 1 {
 			continue
 		} else {
 
 			if d == 2 {
-				if key < node.Left.Key {
-					node = RightRotate(node, m)
+				if key < retNode.Left.Key {
+					retNode = RightRotate(retNode, m)
 				} else {
-					node = LeftRotate(node.Left, m)
-					node = RightRotate(node, m)
+					retNode = LeftRotate(retNode.Left, m)
+					retNode = RightRotate(retNode, m)
 				}
 			} else if d == -2 {
-				if key > node.Right.Key {
-					node = LeftRotate(node, m)
+				if key > retNode.Right.Key {
+					retNode = LeftRotate(retNode, m)
 				} else {
-					node = RightRotate(node.Right, m)
-					node = LeftRotate(node, m)
+					retNode = RightRotate(retNode.Right, m)
+					retNode = LeftRotate(retNode, m)
 				}
 			}
 
@@ -241,16 +243,18 @@ func (m *AvlMap) fixAfterIntersion(key int) {
 				peekData := peekPtr.(*AvlEntry)
 
 				if compare(key, peekData.Key) < 0 {
-					peekData.Left = node
+					peekData.Left = retNode
 				} else {
-					peekData.Right = node
+					peekData.Right = retNode
 				}
 			}
 
 		}
+
 	}
 
-	m.Root = p
+	fmt.Println(p)
+	m.Root = retNode
 }
 
 func getHeight(entry *AvlEntry) float64 {
@@ -271,16 +275,23 @@ func LeftRotate(entry *AvlEntry, avl *AvlMap) *AvlEntry {
 	subRight.Left = entry
 
 	subRight.Parent = parent
-	parent.Right = subRight
+
+	if parent != nil {
+		parent.Right = subRight
+	}
 
 	entry.Right = subSLeft
 	if subSLeft != nil {
 		subSLeft.Parent = entry
 	}
 
-	if entry == avl.Root {
+	if entry.Key == avl.Root.Key {
 		avl.Root = subRight
 	}
+
+	entry.Height = int(math.Max(getHeight(entry.Left), getHeight(entry.Right))) + 1
+
+	subRight.Height = int(math.Max(getHeight(subRight.Left), getHeight(subRight.Right))) + 1
 
 	return subRight
 }
@@ -295,7 +306,10 @@ func RightRotate(entry *AvlEntry, avl *AvlMap) *AvlEntry {
 	subLeft.Right = entry
 
 	subLeft.Parent = parent
-	parent.Left = subLeft
+
+	if parent != nil {
+		parent.Left = subLeft
+	}
 
 	entry.Left = subSRight
 
@@ -306,6 +320,9 @@ func RightRotate(entry *AvlEntry, avl *AvlMap) *AvlEntry {
 	if avl.Root == entry {
 		avl.Root = subLeft
 	}
+
+	entry.Height = int(math.Max(getHeight(entry.Right), getHeight(entry.Left))) + 1
+	subLeft.Height = int(math.Max(getHeight(subLeft.Left), getHeight(subLeft.Right))) + 1
 
 	return subLeft
 }

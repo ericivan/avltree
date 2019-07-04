@@ -1,10 +1,10 @@
 package AvlTree
 
 import (
-	"testing"
+	"ericivan/Queue"
 	"ericivan/stack"
 	"fmt"
-	"ericivan/Queue"
+	"testing"
 )
 
 func TestAvlPut(t *testing.T) {
@@ -112,5 +112,9 @@ func TestPut(t *testing.T) {
 	}
 
 	AvlMapData.Put(1, "1")
+	AvlMapData.Put(2, "2")
+	AvlMapData.Put(3, "3")
+
+	fmt.Println(AvlMapData)
 
 }
